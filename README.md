@@ -15,6 +15,8 @@ Please feel free to refer to the data and scripts; please do not cite without co
 
 ## Directory
 
+* Raw data used can be downloaded from DIIG's [Vendor](https://github.com/CSISdefense/Vendor) repository: [Vendor.SP_DunsnumberNewEntrants_all.zip](https://github.com/CSISdefense/Vendor/blob/master/New%20Entrants/Data/Raw%20Data/FPDS/Vendor.SP_DunsnumberNewEntrants_all.zip)
+
 * Processed data output  
     + FPDS data cleaned and grouped by `Dunsnumber`: [FPDS_datapull_all.Rda](https://github.com/CSISdefense/new-entrants-debug/blob/master/data/FPDS_datapull_all.Rda)  
     + FPDS data clearned, grouped by `Dunsnumber`, and included `navy_cust`: [FPDS_datapull_all.v3.Rda](https://github.com/CSISdefense/new-entrants-debug/blob/master/data/FPDS_datapull_all_v3.Rda)  
