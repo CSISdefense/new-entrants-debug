@@ -16,14 +16,14 @@ Please feel free to refer to the data and scripts; please do not cite without co
 ## Directory
 
 * Processed data output  
-    + FPDS data cleaned and grouped by `Dunsnumber`: [FPDS_datapull_all.Rda]()  
-    + FPDS data clearned, grouped by `Dunsnumber`, and included `navy_cust`: [FPDS_datapull_all.v3.Rda]()  
+    + FPDS data cleaned and grouped by `Dunsnumber`: [FPDS_datapull_all.Rda](https://github.com/CSISdefense/new-entrants-debug/blob/master/data/FPDS_datapull_all.Rda)  
+    + FPDS data clearned, grouped by `Dunsnumber`, and included `navy_cust`: [FPDS_datapull_all.v3.Rda](https://github.com/CSISdefense/new-entrants-debug/blob/master/data/FPDS_datapull_all_v3.Rda)  
 
 * Data processing code  
-    +[New Entrants cleaning data in R SRC v3 for FPDS ONLY.R]()  
+    + [New Entrants cleaning data in R SRC v3 for FPDS ONLY.R](https://github.com/CSISdefense/new-entrants-debug/blob/master/script/New%20Entrants%20cleaning%20data%20in%20R%20SRC%20v3%20for%20FPDS%20ONLY.R)  
 
 * Code generating visualization   
-    + [new-entrants-navy.R]()  
+    + [new-entrants_analysis_navy.R]()  
     
     
 ## References  
