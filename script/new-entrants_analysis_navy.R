@@ -46,18 +46,17 @@ setwd("K:/2018-01 NPS New Entrants/Data/Data/Cleaning data/FPDS")
 
 load(file = "FPDS_datapull_all_v3.Rda")
 
+#Orig. code; filter's out navy-cust early on
 ##count number of new entrants entered each year; only navy, between 2001-2016
-#FPDS_cleaned_unique <- FPDS_cleaned_unique %>% 
+FPDS_cleaned_unique <- FPDS_cleaned_unique %>% 
 #  filter(navy_cust==1) %>% 
-#  filter(registrationYear %in% c(2001:2016))
+  filter(registrationYear %in% c(2001:2016))
 
-FPDS_cleaned_unique_navyvar <- FPDS_cleaned_unique %>% 
-  select(Dunsnumber, navy_cust)
-
-##parse navy dunsnumber
+##parse navy dunsnumber=
 #navy_dunsnumber <- FPDS_cleaned_unique %>% 
 #  select(Dunsnumber) %>%
 #  distinct(Dunsnumber)
+
 
 ####1.2 gs####
 ##load in data
@@ -72,22 +71,27 @@ FPDS_data<-subset(FPDS_data,fiscal_year>=2000)
 FPDS_data<-csis360::deflate(FPDS_data,money_var="obligatedAmount",
                             fy_var="fiscal_year")
 
-##test run for navy graphs
-FPDS_data <- FPDS_data %>% 
-  left_join(FPDS_cleaned_unique_navyvar, by = "Dunsnumber")
-
 ##Calculate first_year
 FPDS_data<-FPDS_data %>%
   group_by(Dunsnumber) %>%
   dplyr::mutate(first_year=min(fiscal_year),
                 entrant=ifelse(min(fiscal_year)==fiscal_year,TRUE,FALSE))
 
+#test run for navy graphs
 #filter for navy early on -- test run for navy graph
-FPDS_data <- FPDS_data %>% 
-  semi_join(navy_dunsnumber, by = "Dunsnumber")
+#FPDS_data <- FPDS_data %>% 
+#  semi_join(navy_dunsnumber, by = "Dunsnumber")
 
+#test code for navy graphs
+##parse navy variable with dunsnumber
+##FPDS_cleaned_unique_navyvar <- FPDS_cleaned_unique %>% 
+##  select(Dunsnumber, navy_cust)
 
-##test code to see whether preserving the customer variable is possible
+#another test run for navy graphs
+##FPDS_data <- FPDS_data %>% 
+##  left_join(FPDS_cleaned_unique_navyvar, by = "Dunsnumber")
+
+#test code to see whether preserving the customer variable is possible
 ##added in customer in grouping to try different approach to graph, but doesn't work
 ##fed_duns_fyear_test<-FPDS_data %>%
  ## group_by(Dunsnumber,fiscal_year,customer,entrant,first_year) %>% 
@@ -330,8 +334,19 @@ data_2006$survive_2016<-as.numeric(as.character(data_2006$survive_2016))
 ####CODE TO TEST NAVY GRAPHS####
 #*********#
 
-##fed_duns_fyear_op <- fed_duns_fyear %>% 
-##  filter(fiscal_year %in% c(2001:2016))
+##test run with navy_cust added for faceting
+fed_duns_fyear_op <- fed_duns_fyear %>% 
+  filter(fiscal_year %in% c(2001:2016))
+
+navy_cust_by_duns <- FPDS_cleaned_unique %>% 
+  select(Dunsnumber, navy_cust) #note to self: what would happen if more variables were selected?
+                                #i.e. fiscal_year, or registration year, or else; that will make joint more precise
+
+fed_duns_fyear_op_w_navy_cust <- fed_duns_fyear_op %>% 
+  left_join(navy_cust_by_duns, by = "Dunsnumber") #note to self: should left_join be used here?
+
+
+##failed attempt to preserve DoD variable
 
 ##create binary variable to distinguish DoD from non
 ##fed_duns_fyear_op <- fed_duns_fyear_op %>% 
@@ -339,12 +354,6 @@ data_2006$survive_2016<-as.numeric(as.character(data_2006$survive_2016))
 
 ##fed_duns_fyear_op <- fed_duns_fyear_op %>% 
 ##  filter(!is.na(DoD))
-
-##navy_cust_by_duns <- FPDS_cleaned_unique %>% 
-##  select(Dunsnumber, navy_cust)
-
-##fed_duns_fyear_op_w_navy_cust <- fed_duns_fyear_op %>% 
-##  left_join(navy_cust_by_duns, by = "Dunsnumber") ##should left_join be used?
 
 
 #**********#
@@ -439,13 +448,17 @@ NE_eachsample_overtime_navy
 #*********#
 
 ##stacked graph
-NE_v_incumbent_count_navy <- ggplot(fed_duns_fyear_op_navy, aes(x = fiscal_year, fill = factor(entrant))) +
+NE_v_incumbent_count_navy <- #ggplot(fed_duns_fyear_op_navy, aes(x = fiscal_year, fill = factor(entrant))) +
+  ggplot(fed_duns_fyear_op_w_navy_cust, aes(x = fiscal_year, fill = factor(entrant))) + 
   geom_histogram(position = "stack", binwidth = .5) +
-  scale_x_continuous(breaks = c(2001:2016)) +
+  scale_x_continuous(breaks = c(2001:2016)) + 
+  facet_wrap(~navy_cust) + 
   xlab("Fiscal Year") +
   ylab("Number of Vendors") +
-  scale_fill_manual(name = "Vendor Type", values = c("#66CCCC", "#336666"), labels = c("Incumbent", "New Entrant")) +
-  ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - All Fed vs. DoD") +
+  scale_fill_manual(name = "Vendor Type", values = c("#66CCCC", "#336666"), labels = c("Incumbent", "New Entrant")) + 
+  #ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - Navy") +
+  ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - Navy vs. Non-Navy") +
+  #ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - All Fed vs. DoD") +
   scale_y_continuous(label=comma)
 
 NE_v_incumbent_count_navy
