@@ -61,12 +61,24 @@ FPDS_cleaned_unique <- FPDS_cleaned_unique %>%
 ####1.2 gs####
 ##load in data
 setwd("K:/2018-01 NPS New Entrants/Data/Data/Raw Data/FPDS")
-FPDS_data <- read.delim("Vendor.SP_DunsnumberNewEntrants_all.txt", fill = TRUE, header=TRUE,  na.strings = c("", "NULL"))
+#FPDS_data <- read.delim("Vendor.SP_DunsnumberNewEntrants_all.txt", fill = TRUE, header=TRUE,  na.strings = c("", "NULL"))
+FPDS_data <- read.delim("Vendor.SP_DunsnumberNewEntrants_all_withservices.txt", fill = TRUE, header=TRUE,  na.strings = c("", "NULL"))
+
 
 FPDS_data<-as.data.frame(FPDS_data)
 
 FPDS_data<-csis360::remove_bom(FPDS_data)
-FPDS_data<-subset(FPDS_data,fiscal_year>=2000)
+
+#mw code: only use with withservices dataset
+FPDS_data <- FPDS_data %>% 
+  mutate(fiscal_year = as.numeric(as.character(fiscal_year)))
+
+#mw code: filter for navy and year; only use with withservices dataset
+FPDS_data <- FPDS_data %>% 
+  filter(subcustomer == "Navy", 
+         fiscal_year>=2000)
+
+#FPDS_data<-subset(FPDS_data,fiscal_year>=2000)
 
 FPDS_data<-csis360::deflate(FPDS_data,money_var="obligatedAmount",
                             fy_var="fiscal_year")
@@ -158,7 +170,7 @@ fed_duns_fyear_samples_op <- fed_duns_fyear_samples[!(fed_duns_fyear_samples$fis
 fed_duns_fyear_samples_op <- fed_duns_fyear_samples_op[!(fed_duns_fyear_samples_op$fiscal_year>2016), ]
 
 
-fed_duns_fyear_op_navy <- fed_duns_fyear %>% 
+fed_duns_fyear_op <- fed_duns_fyear %>% 
   filter(fiscal_year %in% c(2001:2016))
 
 #**********#
@@ -335,15 +347,15 @@ data_2006$survive_2016<-as.numeric(as.character(data_2006$survive_2016))
 #*********#
 
 ##test run with navy_cust added for faceting
-fed_duns_fyear_op <- fed_duns_fyear %>% 
-  filter(fiscal_year %in% c(2001:2016))
+#fed_duns_fyear_op <- fed_duns_fyear %>% 
+#  filter(fiscal_year %in% c(2001:2016))
 
-navy_cust_by_duns <- FPDS_cleaned_unique %>% 
-  select(Dunsnumber, navy_cust) #note to self: what would happen if more variables were selected?
+#navy_cust_by_duns <- FPDS_cleaned_unique %>% 
+  #select(Dunsnumber, navy_cust) #note to self: what would happen if more variables were selected?
                                 #i.e. fiscal_year, or registration year, or else; that will make joint more precise
 
-fed_duns_fyear_op_w_navy_cust <- fed_duns_fyear_op %>% 
-  left_join(navy_cust_by_duns, by = "Dunsnumber") #note to self: should left_join be used here?
+#fed_duns_fyear_op_w_navy_cust <- fed_duns_fyear_op %>% 
+ # left_join(navy_cust_by_duns, by = "Dunsnumber") #note to self: should left_join be used here?
 
 
 ##failed attempt to preserve DoD variable
@@ -449,16 +461,15 @@ NE_eachsample_overtime_navy
 
 ##stacked graph
 NE_v_incumbent_count_navy <- #ggplot(fed_duns_fyear_op_navy, aes(x = fiscal_year, fill = factor(entrant))) +
-  ggplot(fed_duns_fyear_op_w_navy_cust, aes(x = fiscal_year, fill = factor(entrant))) + 
+  ggplot(fed_duns_fyear_op, aes(x = fiscal_year, fill = factor(entrant))) + 
   geom_histogram(position = "stack", binwidth = .5) +
   scale_x_continuous(breaks = c(2001:2016)) + 
-  facet_wrap(~navy_cust) + 
   xlab("Fiscal Year") +
   ylab("Number of Vendors") +
   scale_fill_manual(name = "Vendor Type", values = c("#66CCCC", "#336666"), labels = c("Incumbent", "New Entrant")) + 
-  #ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - Navy") +
-  ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - Navy vs. Non-Navy") +
-  #ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - All Fed vs. DoD") +
+  ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - Navy") +
+  #ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - Navy vs. Non-Navy") +
+  #ggtitle("Number of New Entrants vs. Number of Incumbent Firms Over Time - DoD vs. Non-DoD") +
   scale_y_continuous(label=comma)
 
 NE_v_incumbent_count_navy
@@ -519,15 +530,15 @@ obligations_small_v_nsmall_navy_facet
 #*********#
 
 ##clean data to remove negative values
-fed_duns_fyear_op_navy_summarized<-fed_duns_fyear_op_navy %>% group_by(fiscal_year,entrant) %>%
+fed_duns_fyear_op_summarized<-fed_duns_fyear_op %>% group_by(fiscal_year,entrant) %>%
   dplyr::summarize(obligatedAmount.Deflator.2017=sum(obligatedAmount.Deflator.2017,na.rm=TRUE))
 
 ##clean data to code true and false to incumbent (false) and new entrant (true)
-fed_duns_fyear_op_navy_summarized$entrant<-factor(fed_duns_fyear_op_navy_summarized$entrant)
-levels(fed_duns_fyear_op_navy_summarized$entrant) <- list("Incumbent Firm"=c("FALSE"), "New Entrant"=c("TRUE"))
+fed_duns_fyear_op_summarized$entrant<-factor(fed_duns_fyear_op_summarized$entrant)
+levels(fed_duns_fyear_op_summarized$entrant) <- list("Incumbent Firm"=c("FALSE"), "New Entrant"=c("TRUE"))
 
 ##faceted graph
-obl_NE_v_incumbents_navy <- ggplot(fed_duns_fyear_op_navy_summarized, aes(x = fiscal_year, y = obligatedAmount.Deflator.2017, fill = entrant)) +
+obl_NE_v_incumbents_navy <- ggplot(fed_duns_fyear_op_summarized, aes(x = fiscal_year, y = obligatedAmount.Deflator.2017, fill = entrant)) +
   geom_bar(stat = 'identity', position = 'stack') + 
   ylab("Total Obligations") +
   xlab("Fiscal Year") +
@@ -545,7 +556,7 @@ obl_NE_v_incumbents_navy
 #*********#
 
 ##generate graph: obligations to each sample over time
-obl_eachsample_navy <- ggplot(fed_duns_fyear_samples_op_navy, aes(x = fiscal_year, y = obligatedAmount.Deflator.2017, fill = factor(sample_year))) +
+obl_eachsample_navy <- ggplot(fed_duns_fyear_samples_op, aes(x = fiscal_year, y = obligatedAmount.Deflator.2017, fill = factor(sample_year))) +
   geom_bar(stat = 'identity', position = 'stack') +
   ylab("Total Obligations") +
   xlab("New Entrant Sample") +
