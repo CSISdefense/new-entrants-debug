@@ -4,7 +4,7 @@ This is a public repository set up by the [Defense-Industrial Initiative Group (
 
 Please feel free to refer to the data and scripts; please do not cite without contacting DIIG.  
 
-*As of Oct. 1, 2018, the problem has been identified; this repository is thus archived for future reference.*
+*As of Oct. 1, 2018, the problem has been identified and a better method for controlling for `subcustomer` adopted; this repository is thus archived for future reference.*
 
 ## Notes
 
